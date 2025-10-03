@@ -40,7 +40,7 @@ const Productos = () => {
       <FormularioProductos cargarDatos={cargarDatos} />
       <TablaProductos productos={productos}
       eliminarProducto={eliminarProducto} />
-
+      <ListaProductos productos={productos} />
     </View>
   );
 };
