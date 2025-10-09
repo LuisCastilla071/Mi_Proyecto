@@ -5,19 +5,21 @@ const BotonEliminarCliente = ({ id, eliminarCliente }) => {
   const [visible, setVisible] = useState(false);
 
   const confirmarEliminar = () => {
-    eliminarCliente(id); // usa el id de Firebase
     setVisible(false);
+    eliminarCliente(id);
   };
 
   return (
     <View>
+      {/* Botón pequeño */}
       <TouchableOpacity
         style={styles.boton}
         onPress={() => setVisible(true)}
       >
-        <Text style={styles.textoBoton}>🗑️</Text>
+        <Text style={styles.textoBoton}>🗑</Text>
       </TouchableOpacity>
 
+      {/* Modal de confirmación */}
       <Modal
         visible={visible}
         transparent
@@ -26,14 +28,22 @@ const BotonEliminarCliente = ({ id, eliminarCliente }) => {
       >
         <View style={styles.overlay}>
           <View style={styles.modal}>
-            <Text style={styles.texto}>¿Desea eliminar este cliente?</Text>
+            <Text style={styles.titulo}>Datos del Cliente</Text>
+
+            <View style={styles.infoBox}>
+              <Text style={styles.texto}>Nombre: Juan</Text>
+              <Text style={styles.texto}>Apellido: Calero</Text>
+              <Text style={styles.texto}>Cédula: 121-300805-1001H</Text>
+              <Text style={styles.texto}>Edad: 20</Text>
+              <Text style={styles.texto}>Teléfono: 88271227</Text>
+            </View>
 
             <View style={styles.fila}>
               <TouchableOpacity
                 style={[styles.botonAccion, styles.cancelar]}
                 onPress={() => setVisible(false)}
               >
-                <Text style={styles.textoAccion}>Cancelar</Text>
+                <Text style={styles.textoAccion}>Cerrar</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -55,13 +65,16 @@ const styles = StyleSheet.create({
     padding: 4,
     borderRadius: 5,
     alignItems: "center",
+    justifyContent: "center",
     alignSelf: "center",
-    backgroundColor: "#f3f3f7ff",
+    backgroundColor: "transparent",
   },
-  textoBoton: { fontSize: 14, color: "#000" },
+  textoBoton: {
+    fontSize: 18,
+  },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -72,7 +85,17 @@ const styles = StyleSheet.create({
     width: "80%",
     alignItems: "center",
   },
-  texto: { fontSize: 18, marginBottom: 20 },
+  titulo: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  infoBox: {
+    alignItems: "flex-start",
+    width: "100%",
+    marginBottom: 20,
+  },
+  texto: { fontSize: 16, marginBottom: 5 },
   fila: { flexDirection: "row", justifyContent: "space-between", width: "100%" },
   botonAccion: {
     flex: 1,

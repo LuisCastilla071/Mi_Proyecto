@@ -2,22 +2,24 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
 
 const BotonEliminarProducto = ({ id, eliminarProducto }) => {
-
   const [visible, setVisible] = useState(false);
 
   const confirmarEliminar = () => {
+    setVisible(false);
     eliminarProducto(id);
   };
 
   return (
     <View>
+      {/* Botón pequeño */}
       <TouchableOpacity
         style={styles.boton}
         onPress={() => setVisible(true)}
       >
-        <Text style={styles.textoBoton}>🗑️</Text>
+        <Text style={styles.textoBoton}>🗑</Text>
       </TouchableOpacity>
 
+      {/* Modal de confirmación */}
       <Modal
         visible={visible}
         transparent
@@ -55,13 +57,16 @@ const styles = StyleSheet.create({
     padding: 4,
     borderRadius: 5,
     alignItems: "center",
+    justifyContent: "center",
     alignSelf: "center",
-    backgroundColor: "#f3f3f7ff",
+    backgroundColor: "transparent", // 🔹 antes tenía "#f3f3f7ff"
   },
-  textoBoton: { color: "white", fontSize: 14 },
+  textoBoton: {
+    fontSize: 18, // un poco más grande para el emoji
+  },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -73,8 +78,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   texto: { fontSize: 18, marginBottom: 20 },
-  fila: { flexDirection: "row", justifyContent: "space-between", width: "100%"
-  },
+  fila: { flexDirection: "row", justifyContent: "space-between", width: "100%" },
   botonAccion: {
     flex: 1,
     marginHorizontal: 5,
