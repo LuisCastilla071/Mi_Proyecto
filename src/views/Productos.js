@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Alert } from "react-native";
+import { View, StyleSheet, Alert, Button } from "react-native";
 import { db } from "../database/firebaseconfig.js";
 import { collection, getDocs, doc, deleteDoc, addDoc, updateDoc } from "firebase/firestore";
 import FormularioProductos from "../components/FormularioProductos.js";
 import TablaProductos from "../components/TablaProductos.js";
 
-const Productos = () => {
+const Productos = ({ cerrarSesion }) => {
   const [productos, setProductos] = useState([]);
   const [nuevoProducto, setNuevoProducto] = useState({ nombre: "", precio: "" });
   const [modoEdicion, setModoEdicion] = useState(false);
@@ -33,6 +33,8 @@ const Productos = () => {
   const manejoCambio = (campo, valor) => {
     setNuevoProducto({ ...nuevoProducto, [campo]: valor });
   };
+
+
 
   // Guardar producto nuevo
   const guardarProducto = async () => {
@@ -62,6 +64,7 @@ const Productos = () => {
       console.error("Error al eliminar:", error);
     }
   };
+
 
   // Cargar datos en modo edición
   const editarProducto = (producto) => {
@@ -94,6 +97,7 @@ const Productos = () => {
 
   return (
     <View style={styles.container}>
+
       <FormularioProductos
         nuevoProducto={nuevoProducto}
         manejoCambio={manejoCambio}
@@ -101,7 +105,7 @@ const Productos = () => {
         actualizarProducto={actualizarProducto}
         modoEdicion={modoEdicion}
       />
-
+      <Button title="Cerrar Sesión" onPress={cerrarSesion} />
       <TablaProductos
         productos={productos}
         eliminarProducto={eliminarProducto}

@@ -1,16 +1,34 @@
-import React from "react";
-import Productos from "./src/views/Productos.js";
-import Clientes from "./src/views/Clientes.js";
-import Promedio from "./src/views/Promedio.js";
-import Suma from "./src/views/Suma.js";
-import Triangulo from "./src/views/Triangulo.js";
-import IMC from "./src/views/IMC.js";
+import React, { useEffect, useState } from 'react';
+import { View } from 'react-native';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth } from './src/database/firebaseconfig';
+import Login from './src/components/Login';
+import Productos from './src/views/Productos';
 
 export default function App() {
+  const [usuario, setUsuario] = useState(null);
 
+  useEffect(() => {
+    // Escucha los cambios en la autenticación (login/logout)
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUsuario(user);
+    });
+    return unsubscribe;
+  }, []);
+
+  const cerrarSesion = async () => {
+    await signOut(auth);
+  };
+
+  if (!usuario) {
+    // Si no hay usuario autenticado, mostrar login
+    return <Login onLoginSuccess={() => setUsuario(auth.currentUser)} />;
+  }
+
+  // Si hay usuario autenticado, mostrar productos
   return (
-    <>
-      <Clientes/>
-    </>
+    <View style={{ flex: 1 }}>
+      <Productos cerrarSesion={cerrarSesion} />
+    </View>
   );
 }
