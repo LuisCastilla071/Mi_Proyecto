@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Alert } from "react-native";
+import { View, StyleSheet, Alert, Button } from "react-native";
 import { db } from "../database/firebaseconfig.js";
 import { collection, getDocs, doc, deleteDoc, addDoc, updateDoc } from "firebase/firestore";
 import FormularioClientes from "../components/FormularioClientes.js";
 import TablaClientes from "../components/TablaClientes.js";
 
-const Clientes = () => {
+const Clientes = ({ cerrarSesion }) => {
   const [clientes, setClientes] = useState([]);
   const [nuevoCliente, setNuevoCliente] = useState({
     nombre: "",
@@ -121,7 +121,7 @@ const Clientes = () => {
         actualizarCliente={actualizarCliente}
         modoEdicion={modoEdicion}
       />
-
+      <Button title="Cerrar Sesión" onPress={cerrarSesion} />
       <TablaClientes
         clientes={clientes}
         eliminarCliente={eliminarCliente}

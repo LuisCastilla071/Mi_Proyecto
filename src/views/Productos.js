@@ -5,7 +5,7 @@ import { collection, getDocs, doc, deleteDoc, addDoc, updateDoc } from "firebase
 import FormularioProductos from "../components/FormularioProductos.js";
 import TablaProductos from "../components/TablaProductos.js";
 
-const Productos = ({ cerrarSesion }) => {
+const Productos = () => {
   const [productos, setProductos] = useState([]);
   const [nuevoProducto, setNuevoProducto] = useState({ nombre: "", precio: "" });
   const [modoEdicion, setModoEdicion] = useState(false);
@@ -33,8 +33,6 @@ const Productos = ({ cerrarSesion }) => {
   const manejoCambio = (campo, valor) => {
     setNuevoProducto({ ...nuevoProducto, [campo]: valor });
   };
-
-
 
   // Guardar producto nuevo
   const guardarProducto = async () => {
@@ -105,7 +103,6 @@ const Productos = ({ cerrarSesion }) => {
         actualizarProducto={actualizarProducto}
         modoEdicion={modoEdicion}
       />
-      <Button title="Cerrar Sesión" onPress={cerrarSesion} />
       <TablaProductos
         productos={productos}
         eliminarProducto={eliminarProducto}
