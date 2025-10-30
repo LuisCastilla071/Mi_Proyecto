@@ -4,32 +4,55 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './src/database/firebaseconfig';
 import Login from './src/components/Login';
 import Productos from './src/views/Productos';
-import Clientes from './src/views/Clientes';
+import insertarCiudades from './src/components/insertarCiudades';
+import ConsultasFirestore from './src/views/ConsultasFirestore';
 
 export default function App() {
   const [usuario, setUsuario] = useState(null);
 
   useEffect(() => {
-    // Escucha los cambios en la autenticación (login/logout)
+    // 🔹 Insertar ciudades solo si la colección está vacía
+    const cargarDatos = async () => {
+      try {
+        // Descomenta la línea siguiente para insertar ciudades la primera vez
+        // await insertarCiudades();
+      } catch (error) {
+        console.error("❌ Error al cargar ciudades:", error);
+      }
+    };
+    cargarDatos();
+
+    // 🔹 Escucha los cambios en autenticación
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUsuario(user);
     });
-    return unsubscribe;
+
+    // 🔹 Cleanup al desmontar
+    return () => unsubscribe();
   }, []);
 
   const cerrarSesion = async () => {
-    await signOut(auth);
+    try {
+      await signOut(auth);
+      console.log("✅ Sesión cerrada correctamente");
+    } catch (error) {
+      console.error("❌ Error al cerrar sesión:", error);
+    }
   };
 
   if (!usuario) {
-    // Si no hay usuario autenticado, mostrar login
+    // 🔹 Si no hay usuario autenticado, mostrar pantalla de login
     return <Login onLoginSuccess={() => setUsuario(auth.currentUser)} />;
   }
 
-  // Si hay usuario autenticado, mostrar productos
   return (
     <View style={{ flex: 1 }}>
-      <Clientes cerrarSesion={cerrarSesion} />
+
+      {/* 🔹 Vista principal de Productos */}
+      <Productos cerrarSesion={cerrarSesion} />
+            {/* 🔹 Consultas a Firestore */}
+      <ConsultasFirestore />
+      
     </View>
   );
 }
