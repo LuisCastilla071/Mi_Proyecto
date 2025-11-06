@@ -39,29 +39,57 @@ const Productos = ({ cerrarSesion }) => {
     }
   };
 
-  // FUNCIÓN CORREGIDA: Carga datos de MÚLTIPLES colecciones para la exportación
-  const cargarDatosFirebase = async () => {
-    try {
-      const datosExportados = {};
-
-      for (const col of colecciones) {
-        // Asegúrate de que el nombre de la colección coincida exactamente (minúsculas/mayúsculas)
-        const snapshot = await getDocs(collection(db, col)); 
-        datosExportados[col] = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-      }
-
-      return datosExportados;
-    } catch (error) {
-      console.error("Error extrayendo datos (Exportación):", error);
-      // 🚩 SOLUCIÓN CLAVE: Devolver null para manejar el error en la función que llama
-      return null; 
+ const exportarDatosColeccion = async () => {
+  try {
+    // 🚩 CORRECCIÓN CRÍTICA 3: Ahora pasas el nombre de la colección que quieres exportar
+    const datos = await cargarDatosFirebaseColeccion("productos"); 
+    console.log("Datos cargados:", datos);
+    
+    // El manejo de errores con !datos (si es null) ahora funciona perfectamente
+    if (!datos) {
+      Alert.alert(
+          "Error de Exportación", 
+          "No se pudieron cargar los datos. Revisa la consola: puede ser un error de permisos (reglas) o de conexión."
+      );
+      return; 
     }
-  };
 
-  // FUNCIÓN CORREGIDA: Exporta, copia y comparte
+    // Formatea los datos para el archivo y el portapapeles
+    const jsonString = JSON.stringify(datos, null, 2);
+
+    const baseFileName = "datos_firebase.txt";
+
+    // Copiar datos al portapapeles
+    await Clipboard.setStringAsync(jsonString);
+    console.log("Datos (JSON) copiados al portapapeles.");
+
+    // Verificar si la función de compartir está disponible
+    if (!(await Sharing.isAvailableAsync())) {
+      Alert.alert("Error", "La función Compartir/Guardar no está disponible en tu dispositivo");
+      return;
+    }
+
+    // Guardar el archivo temporalmente
+    const fileUri = FileSystem.cacheDirectory + baseFileName;
+
+    // Escribir el contenido JSON en el caché temporal
+    await FileSystem.writeAsStringAsync(fileUri, jsonString);
+
+    // Abrir el diálogo de compartir
+    await Sharing.shareAsync(fileUri, {
+      mimeType: 'text/plain',
+      dialogTitle: 'Compartir datos de Firebase (JSON)'
+    });
+
+    Alert.alert("Éxito", "Datos copiados al portapapeles y listos para compartir.");
+
+  } catch (error) {
+    console.error("Error al exportar y compartir:", error);
+    // Usar Alert.alert para mostrar errores de Clipboard/Sharing/FileSystem
+    Alert.alert("Error al exportar o compartir", "Ha ocurrido un error inesperado: " + error.message);
+  }
+};
+
   const exportarDatos = async () => {
     try {
       // 🚩 SOLUCIÓN CLAVE: NO pasar "productos" como argumento
@@ -111,8 +139,58 @@ const Productos = ({ cerrarSesion }) => {
       Alert.alert("Error al exportar o compartir", "Ha ocurrido un error inesperado: " + error.message);
     }
   };
-  
-  // ... (El resto de tus funciones como useEffect, manejoCambio, guardarProducto, eliminarProducto, editarProducto, actualizarProducto se mantienen igual) ...
+
+const cargarDatosFirebaseColeccion = async (productos) => {
+  // Nota: 'productos' es el nombre de la colección (un string)
+
+  if (!productos || typeof productos !== 'string') {
+    console.error("Error: Se requiere un nombre de colección válido.");
+    // 🚩 CORRECCIÓN CRÍTICA 1: Devuelve null en la validación
+    return null; 
+  }
+
+  try {
+    const datosExportados = {};
+
+    // Obtener la referencia a la colección específica
+    // Asume que 'db' y 'getDocs'/'collection' están disponibles
+    const snapshot = await getDocs(collection(db, productos));
+
+    // Mapear los documentos y agregarlos al objeto de resultados
+    datosExportados[productos] = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return datosExportados;
+  } catch (error) {
+    console.error(`Error extrayendo datos de la colección ${productos}:`, error);
+    // 🚩 CORRECCIÓN CRÍTICA 2: Devuelve null si Firebase falla (ej: permisos)
+    return null;
+  }
+};
+
+  // FUNCIÓN CORREGIDA: Carga datos de MÚLTIPLES colecciones para la exportación
+  const cargarDatosFirebase = async () => {
+    try {
+      const datosExportados = {};
+
+      for (const col of colecciones) {
+        // Asegúrate de que el nombre de la colección coincida exactamente (minúsculas/mayúsculas)
+        const snapshot = await getDocs(collection(db, col)); 
+        datosExportados[col] = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+      }
+
+      return datosExportados;
+    } catch (error) {
+      console.error("Error extrayendo datos (Exportación):", error);
+      // 🚩 SOLUCIÓN CLAVE: Devolver null para manejar el error en la función que llama
+      return null; 
+    }
+  };
 
   useEffect(() => {
     cargarDatos();
@@ -202,7 +280,10 @@ const Productos = ({ cerrarSesion }) => {
         editarProducto={editarProducto}
       />
       <View style={{ marginVertical: 10 }}>
-        <Button title="Exportar" onPress={exportarDatos} />
+        <Button title="Exportar Colecciones" onPress={exportarDatos} />
+      </View>
+      <View style={{ marginVertical: 10 }}>
+        <Button title="Exportar Datos Productos" onPress={exportarDatosColeccion} />
       </View>
     </View>
   );
