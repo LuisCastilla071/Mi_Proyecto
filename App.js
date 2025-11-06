@@ -47,12 +47,10 @@ export default function App() {
 
   return (
     <View style={{ flex: 1 }}>
-
-      {/* 🔹 Vista principal de Productos */}
+     
       <Productos cerrarSesion={cerrarSesion} />
             {/* 🔹 Consultas a Firestore */}
-      <ConsultasFirestore />
-      
+            
     </View>
   );
 }
