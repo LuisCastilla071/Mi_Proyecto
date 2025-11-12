@@ -6,6 +6,7 @@ import Login from './src/components/Login';
 import Productos from './src/views/Productos';
 import insertarCiudades from './src/components/insertarCiudades';
 import ConsultasFirestore from './src/views/ConsultasFirestore';
+import ProductosRealtime from './src/views/ProductosRealtime';
 
 export default function App() {
   const [usuario, setUsuario] = useState(null);
@@ -47,10 +48,10 @@ export default function App() {
 
   return (
     <View style={{ flex: 1 }}>
-     
-      <Productos cerrarSesion={cerrarSesion} />
+    
+    
             {/* 🔹 Consultas a Firestore */}
-            
+      <ProductosRealtime /> 
     </View>
   );
 }
