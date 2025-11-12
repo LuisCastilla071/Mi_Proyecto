@@ -7,6 +7,7 @@ import Productos from './src/views/Productos';
 import insertarCiudades from './src/components/insertarCiudades';
 import ConsultasFirestore from './src/views/ConsultasFirestore';
 import ProductosRealtime from './src/views/ProductosRealtime';
+import CalculadoraIMC from './src/views/CalculadoraIMC';
 
 export default function App() {
   const [usuario, setUsuario] = useState(null);
@@ -51,7 +52,7 @@ export default function App() {
     
     
             {/* 🔹 Consultas a Firestore */}
-      <ProductosRealtime /> 
+      <CalculadoraIMC /> 
     </View>
   );
 }
