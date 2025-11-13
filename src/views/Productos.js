@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Alert, Button } from "react-native";
+import { View, StyleSheet, Button, Alert } from "react-native";
 
 // Asegúrate de que db se exporte correctamente y que el usuario esté logueado
 import { db } from "../database/firebaseconfig.js";
@@ -11,9 +11,11 @@ import TablaProductos from "../components/TablaProductos.js";
 
 // Importaciones de Expo (asegúrate de que uses las versiones correctas)
 // Usar la versión estándar sin /legacy
-import * as FileSystem from "expo-file-system/legacy"; 
 import * as Sharing from "expo-sharing";
 import * as Clipboard from "expo-clipboard";
+
+import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system/legacy";
 
 
 const Productos = ({ cerrarSesion }) => {
@@ -299,6 +301,180 @@ const Productos = ({ cerrarSesion }) => {
         }
     };
 
+ const extraerYGuardarMascotas = async () => {
+    try {
+        // Abrir selector de documentos para elegir archivo Excel
+        const result = await DocumentPicker.getDocumentAsync({
+          type: [
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.ms-excel",
+          ],
+          copyToCacheDirectory: true,
+        });
+
+        if (result.canceled || !result.assets || result.assets.length === 0) {
+          Alert.alert("Cancelado", "No se seleccionó ningún archivo.");
+          return;
+        }
+
+        const { uri, name } = result.assets[0];
+        console.log(`Archivo seleccionado: ${name} en ${uri}`);
+
+        // Leer el archivo como base64
+        const base64 = await FileSystem.readAsStringAsync(uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+
+        // Enviar a Lambda para procesar
+        const response = await fetch(
+          "https://ec45db6mba.execute-api.us-east-1.amazonaws.com/extraerexcel", // <-- REVISA Y AJUSTA ESTA URL
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ archivoBase64: base64 }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Error HTTP en lambda: ${response.status}`);
+        }
+
+        const body = await response.json();
+        const { datos } = body;
+
+        if (!datos || !Array.isArray(datos) || datos.length === 0) {
+          Alert.alert(
+            "Error",
+            "No se encontraron datos en el Excel o el archivo está vacío(o)."
+          );
+          return;
+        }
+
+        console.log("Datos extraídos del Excel:", datos);
+
+        // Guardar cada fila en la collección 'mascotas'
+        let guardados = 0;
+        let errores = 0;
+
+        for (const mascota of datos) {
+          try {
+            // Columnas 'nombre', 'edad', 'raza' (ajusta si los headers son diferentes)
+            await addDoc(collection(db, "mascotas"), {
+              nombre: mascota.nombre || "",
+              edad: mascota.edad || 0,
+              raza: mascota.raza || "",
+            });
+            guardados++;
+          } catch (err) {
+            console.error("Error guardando mascota:", mascota, err);
+            errores++;
+          }
+        }
+
+        Alert.alert(
+          "Éxito",
+          `Se guardaron ${guardados} mascotas en la colección. Errores: ${errores}`,
+          [{ text: "OK" }]
+        );
+      } catch (error) {
+        console.error("Error en extraerYGuardarMascotas:", error);
+        Alert.alert(
+          "Error",
+          `Error procesando el Excel: ${error.message}`
+        );
+      }
+    };
+
+    const extraerYGuardarBicicletas = async () => {
+    try {
+        // 🚲 Abrir selector de documentos para elegir archivo Excel
+        const result = await DocumentPicker.getDocumentAsync({
+            type: [
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/vnd.ms-excel",
+            ],
+            copyToCacheDirectory: true,
+        });
+
+        if (result.canceled || !result.assets || result.assets.length === 0) {
+            Alert.alert("Cancelado", "No se seleccionó ningún archivo.");
+            return;
+        }
+
+        const { uri, name } = result.assets[0];
+        console.log(`Archivo seleccionado: ${name} en ${uri}`);
+
+        // Leer el archivo como base64
+        const base64 = await FileSystem.readAsStringAsync(uri, {
+            encoding: FileSystem.EncodingType.Base64,
+        });
+
+        // 🚀 Enviar a Lambda para procesar
+        const response = await fetch(
+            "https://ec45db6mba.execute-api.us-east-1.amazonaws.com/extraerexcel", // <-- REVISA Y AJUSTA ESTA URL DE LAMBDA
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ archivoBase64: base64 }),
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Error HTTP en lambda: ${response.status}`);
+        }
+
+        const body = await response.json();
+        const { datos } = body; // Se espera que 'datos' contenga el array de bicicletas
+
+        if (!datos || !Array.isArray(datos) || datos.length === 0) {
+            Alert.alert(
+                "Error",
+                "No se encontraron datos en el Excel o el archivo está vacío."
+            );
+            return;
+        }
+
+        console.log("Datos extraídos del Excel:", datos);
+
+        // 💾 Guardar cada fila en la collección 'bicicletas'
+        let guardados = 0;
+        let errores = 0;
+
+        for (const bicicleta of datos) {
+            try {
+                // Se mapean los campos 'marca', 'modelo', 'tipo', 'precio', 'color'
+                await addDoc(collection(db, "bicicletas"), {
+                    marca: bicicleta.marca || "",
+                    modelo: bicicleta.modelo || "",
+                    tipo: bicicleta.tipo || "",
+                    // El precio se convierte a número, con un valor por defecto de 0 si no existe.
+                    precio: Number(bicicleta.precio) || 0,
+                    color: bicicleta.color || "",
+                });
+                guardados++;
+            } catch (err) {
+                console.error("Error guardando bicicleta:", bicicleta, err);
+                errores++;
+            }
+        }
+
+        Alert.alert(
+            "Éxito",
+            `Se guardaron ${guardados} bicicletas en la colección. Errores: ${errores}`,
+            [{ text: "OK" }]
+        );
+    } catch (error) {
+        console.error("Error en extraerYGuardarBicicletas:", error);
+        Alert.alert(
+            "Error",
+            `Error procesando el Excel: ${error.message}`
+        );
+    }
+};
 
     return (
         <View style={styles.container}>
@@ -311,15 +487,27 @@ const Productos = ({ cerrarSesion }) => {
                 modoEdicion={modoEdicion}
             />
             <Button title="Cerrar Sesión" onPress={cerrarSesion} />
+
             <View style={{ marginVertical: 10 }}>
                 <Button title="Exportar Colecciones" onPress={exportarDatos} />
             </View>
+
             <View style={{ marginVertical: 10 }}>
                 <Button title="Exportar Datos Productos" onPress={exportarDatosColeccion} />
             </View>
+
             <View style={{ marginVertical: 10 }}>
                 <Button title="Exportar Excel" onPress={generarExcel} />
             </View>
+            
+            <View style={{ marginVertical: 10 }}>
+                <Button title="Extraer Mascotas desde Excel" onPress={extraerYGuardarMascotas} />
+            </View>
+
+            <View style={{ marginVertical: 10 }}>
+                <Button title="Extraer Bicicletas desde Excel" onPress={extraerYGuardarBicicletas} />
+            </View>
+
             <TablaProductos
                 productos={productos}
                 eliminarProducto={eliminarProducto}

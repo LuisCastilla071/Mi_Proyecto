@@ -52,7 +52,7 @@ export default function App() {
     
     
             {/* 🔹 Consultas a Firestore */}
-      <CalculadoraIMC /> 
+      <Productos cerrarSesion={cerrarSesion}/> 
     </View>
   );
 }
